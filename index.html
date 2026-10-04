@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RoadWatch AI — Smart Road Hazard Detection & Reporting</title>
+  <meta name="description" content="Upload a photo of a road hazard, get an AI classification with confidence score, and pin it on a community map." />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo">🛣️</span>
+      <div>
+        <h1>RoadWatch AI</h1>
+        <p class="tagline">Smart Road Hazard Detection &amp; Reporting · SDG 11 · SDG 3</p>
+      </div>
+    </div>
+    <span id="modelStatus" class="model-badge">loading…</span>
+  </header>
+
+  <main class="layout">
+    <!-- LEFT: report form -->
+    <section class="panel">
+      <h2>Report a Hazard</h2>
+
+      <label class="dropzone" id="dropzone">
+        <input type="file" id="photoInput" accept="image/*" hidden />
+        <img id="preview" alt="" hidden />
+        <span id="dropHint">📷 Click to upload a photo of the road hazard</span>
+      </label>
+
+      <div id="predictionBox" class="prediction" hidden>
+        <div class="prediction-head">AI Prediction</div>
+        <div id="predictionMain" class="prediction-main"></div>
+        <ul id="predictionBars" class="prediction-bars"></ul>
+        <p class="prediction-note">Powered by a Teachable Machine image-classification model (TensorFlow.js, runs in your browser).</p>
+      </div>
+
+      <label for="locationText">Location description</label>
+      <input type="text" id="locationText" placeholder="e.g. Near Sector 18 market road" />
+
+      <p class="hint">📍 Click on the map to set the exact pin, or use your current location:</p>
+      <button type="button" id="useGps" class="btn secondary">Use my current location</button>
+
+      <button type="button" id="submitReport" class="btn primary" disabled>Submit Report</button>
+      <p id="formError" class="error" hidden></p>
+    </section>
+
+    <!-- RIGHT: map -->
+    <section class="panel map-panel">
+      <h2>Hazard Map <span id="reportCount" class="count"></span></h2>
+      <div id="map"></div>
+      <p class="legend">
+        <span><i class="dot pothole"></i>Pothole</span>
+        <span><i class="dot waterlogging"></i>Waterlogging</span>
+        <span><i class="dot debris"></i>Debris</span>
+        <span><i class="dot clear"></i>Clear / No hazard</span>
+        <span><i class="dot verified"></i>✔ = verified</span>
+      </p>
+    </section>
+  </main>
+
+  <!-- Reports list -->
+  <section class="panel reports">
+      <h2>Recent Reports <button type="button" id="loadSamples" class="btn secondary" style="width:auto;font-size:.72rem;margin:0 0 0 .5rem;padding:.3rem .6rem">Load 5 sample reports</button></h2>
+    <div id="reportsList" class="reports-grid"></div>
+  </section>
+
+  <footer>
+    <p>RoadWatch AI · A CBSE AI (843) class project · Model: Google Teachable Machine · Map data © OpenStreetMap contributors</p>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.20.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/gh/googlecreativelab/teachablemachine-community@master/libraries/image/tmImage.min.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
