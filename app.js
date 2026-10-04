@@ -25,6 +25,7 @@ let currentPhoto = null;   // dataURL
 let currentPrediction = null; // {label, confidence, probs}
 let currentLatLng = null;
 let map, marker;
+let modelImageSize = 224;
 
 /* ---------- persistence ---------- */
 function loadReports() {
@@ -42,13 +43,14 @@ async function loadModel() {
     const res = await fetch("model/metadata.json", { cache: "no-store" });
     if (!res.ok) throw new Error("no model files");
     const meta = await res.json();
-    // Load with Teachable Machine community library (exposes tmImage)
-    model = await window.tmImage.load("model/model.json", "model/metadata.json");
+    // Teachable Machine image models are plain Keras layers models — load directly with tfjs.
+    model = await tf.loadLayersModel("model/model.json");
     modelMode = "live";
     if (Array.isArray(meta.labels) && meta.labels.length) LABELS = meta.labels;
+    modelImageSize = meta.imageSize || 224;
     badge.textContent = "AI model: LIVE (" + meta.labels.join(", ") + ")";
     badge.className = "model-badge live";
-  } catch {
+  } catch (err) {
     modelMode = "demo";
     badge.textContent = "Demo mode — drop your Teachable Machine export in /model to go live";
     badge.className = "model-badge demo";
@@ -91,13 +93,21 @@ async function demoPredict(imgEl) {
 
 async function predict(imgEl) {
   if (modelMode === "live") {
-    const preds = await model.predict(imgEl);
+    // Teachable Machine preprocessing: resize to model input, normalize [0,255] -> [-1,1]
+    const input = tf.tidy(() => {
+      const img = tf.browser.fromPixels(imgEl);
+      const resized = tf.image.resizeBilinear(img, [modelImageSize, modelImageSize]);
+      return resized.toFloat().div(127.5).sub(1).expandDims(0);
+    });
+    const out = tf.tidy(() => model.predict(input));
+    const data = await out.data();
+    input.dispose(); out.dispose();
     const probs = {};
-    let label = preds[0].className, conf = 0;
-    for (const p of preds) {
-      probs[p.className] = p.probability;
-      if (p.probability > conf) { conf = p.probability; label = p.className; }
-    }
+    let label = LABELS[0], conf = 0;
+    LABELS.forEach((name, i) => {
+      probs[name] = data[i];
+      if (data[i] > conf) { conf = data[i]; label = name; }
+    });
     return { label, confidence: conf, probs };
   }
   return demoPredict(imgEl);
