@@ -6,9 +6,10 @@
  */
 "use strict";
 
-const CLASSES = ["Pothole", "Waterlogging", "Debris", "Clear Road"];
+let LABELS = ["Pothole", "Waterlogging", "Debris", "Clear Road"]; // overridden by model metadata labels once loaded
 const CLASS_COLORS = {
   "Pothole": "#d35400",
+  "Potholes": "#d35400",
   "Waterlogging": "#2980b9",
   "Debris": "#8e44ad",
   "Clear Road": "#27ae60",
@@ -44,6 +45,7 @@ async function loadModel() {
     // Load with Teachable Machine community library (exposes tmImage)
     model = await window.tmImage.load("model/model.json", "model/metadata.json");
     modelMode = "live";
+    if (Array.isArray(meta.labels) && meta.labels.length) LABELS = meta.labels;
     badge.textContent = "AI model: LIVE (" + meta.labels.join(", ") + ")";
     badge.className = "model-badge live";
   } catch {
@@ -79,7 +81,10 @@ async function demoPredict(imgEl) {
   };
   const sum = Object.values(p).reduce((a, b) => a + b, 0);
   const probs = {};
-  for (const k of CLASSES) probs[k] = p[k] / sum;
+  for (const k of LABELS) {
+    const key = k.startsWith("Pothole") ? "Pothole" : k;
+    probs[k] = (p[key] ?? 0) / sum;
+  }
   const label = Object.entries(probs).sort((a, b) => b[1] - a[1])[0][0];
   return { label, confidence: probs[label], probs };
 }
@@ -132,7 +137,7 @@ function renderPrediction(pred) {
   main.textContent = `${pred.label} — ${(pred.confidence * 100).toFixed(1)}% confidence`;
   if (modelMode === "demo") main.textContent += "  (demo)";
   bars.innerHTML = "";
-  for (const cls of CLASSES) {
+  for (const cls of LABELS) {
     const v = pred.probs[cls] ?? 0;
     bars.insertAdjacentHTML("beforeend",
       `<li><span>${cls}</span><span class="bar"><i style="width:${(v * 100).toFixed(0)}%;background:${CLASS_COLORS[cls]}"></i></span><span>${(v * 100).toFixed(1)}%</span></li>`);
