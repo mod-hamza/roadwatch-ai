@@ -302,10 +302,10 @@ function loadSampleReports() {
   ];
   const reports = loadReports();
   const samplePhotos = [
-    "training-data/pothole/pothole_3.png",
+    "training-data/pothole/pothole_3.jpg",
     "training-data/waterlogging/wl_1.jpg",
     "training-data/debris/debris_1.jpg",
-    "training-data/pothole/pothole_5.png",
+    "training-data/pothole/pothole_5.jpg",
     "training-data/clear_road/road_1.jpg",
   ];
   spots.forEach((s, i) => {
