@@ -301,10 +301,17 @@ function loadSampleReports() {
     { lat: 28.7041, lng: 77.1025, loc: "Rohini Sector 7 market", cls: "Clear Road" },
   ];
   const reports = loadReports();
+  const samplePhotos = [
+    "training-data/pothole/pothole_3.png",
+    "training-data/waterlogging/wl_1.jpg",
+    "training-data/debris/debris_1.jpg",
+    "training-data/pothole/pothole_5.png",
+    "training-data/clear_road/road_1.jpg",
+  ];
   spots.forEach((s, i) => {
     reports.push({
       id: crypto.randomUUID(),
-      photo: `https://picsum.photos/seed/roadhazard${i}/480/300`,
+      photo: samplePhotos[i],
       hazardClass: s.cls,
       confidence: 0.82 + i * 0.03,
       probs: {},
